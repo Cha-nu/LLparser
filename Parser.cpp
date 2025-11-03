@@ -3,12 +3,12 @@
 
 using namespace std;
 
-// 전역 변수로 ID, CONST, OP 개수 추적
+// ID, CONST, OP 개수
 int idCount = 0;
 int constCount = 0;
 int opCount = 0;
 
-// 각 카운터 초기화
+// 변수 초기화
 void resetCounts() {
     idCount = 0;
     constCount = 0;
@@ -72,22 +72,21 @@ ParsingTreeNode* statements() {
         }
         else {
             // [핵심 오류 복구] ;도 EOF도 아닌 토큰 (ex: ')')을 만났을 때
-            // 1. 오류를 보고합니다.
+            // 1. 오류를 보고
             string errorMsg = "(ERROR) \"세미콜론(;)이 예상된 위치에 예상치 못한 토큰 '" + (string)lexeme + "' 발견.\"";
             
             // statement() 자체에 에러가 없었다면(OK였다면),
-            // 이 라인(statement)에 문법 오류가 있음을 설정합니다.
+            // 이 라인(statement)에 문법 오류 설정
             if (statementNode->status != ERROR) {
                 statementNode->setStatus(ERROR, errorMsg);
             }
             
-            // 2. 오류 복구: 다음 세미콜론(;)이나 EOF_TOKEN까지 토큰을 버립니다.
-            //    (다음 statement로 넘어가기 위해)
+            // 2. 오류 복구: 다음 세미콜론(;)이나 EOF_TOKEN까지 토큰을 처리
             while (nextToken != SEMI_COLON && nextToken != EOF && nextToken != IDENT) {
                 lexical(); // 토큰 소모
             }
 
-            // 만약 세미콜론을 찾았다면, 다음 루프를 위해 소모합니다.
+            // 만약 세미콜론을 찾았다면, 다음 루프를 위해 소모
             if (nextToken == SEMI_COLON) {
                 lexical(); 
             }
@@ -129,24 +128,21 @@ ParsingTreeNode* statement() {
             node->addChild(exprNode); // STATEMENT 노드에 expression 추가
 
             // [!!! 핵심 수정 사항 !!!]
-            // expression()이 끝난 직후 토큰을 확인합니다.
-            // 표현식 자체는 성공했더라도(isDefined), 뒤에 ;가 오지 않으면 문장(statement) 오류입니다.
+            // expression()이 끝난 직후 토큰을 확인
+            // 표현식 자체는 성공했더라도(isDefined), 뒤에 ;가 오지 않으면 문장(statement) 오류
             if (nextToken != SEMI_COLON && nextToken != EOF) {
                 
                 // (예: ')' 나 '+' 같은 예상치 못한 토큰)
                 string errorMsg = "(ERROR) \"세미콜론(;)이 예상된 위치에 예상치 못한 토큰 '" + (string)lexeme + "' 발견.\"";
                 
-                // statement()가 이미 다른 에러를 가지고 있지 않다면, 이 에러를 설정합니다.
+                // statement()가 이미 다른 에러를 가지고 있지 않다면, 이 에러를 설정
                 if (node->status != ERROR) {
                     node->setStatus(ERROR, errorMsg);
                 }
 
-                // [!!! 가장 중요 !!!]
-                // 오류가 발생했으므로, 이 표현식의 결과는 유효하지 않음(defined)으로 처리합니다.
+                // 오류가 발생했으므로, 이 표현식의 결과는 유효하지 않음(defined)으로 처리
                 exprNode->isDefined = false;
             }
-            // [!!! 수정 끝 !!!]
-
 
             if (exprNode->isDefined) {
                 identNode->setValue(exprNode->value);
