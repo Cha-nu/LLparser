@@ -11,6 +11,7 @@ int lexLen = 0;
 int token = 0;
 int nextToken = 0;
 FILE* in_fp = NULL;
+bool hasDot = false;
 
 // lookup - 연산자와 괄호를 조사하여 그 토큰을 반환하는 함수
 int lookup(char ch)
@@ -129,7 +130,7 @@ int lexical()
 
         case DIGIT:  // 숫자 리터럴 파싱(정수/실수)
         {
-            bool hasDot = false;
+            hasDot = false;
             addChar();
             getChar();
             while (true)

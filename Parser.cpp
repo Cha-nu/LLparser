@@ -20,7 +20,7 @@ void resetCounts() {
 // 트리를 순회하면서 노드 정보를 출력하는 함수
 void printCounts() {
     cout << endl;
-    cout << "ID: " << idCount << " CONST: " << constCount << " OP: " << opCount << endl;
+    cout << BLUE << "ID: " << idCount << " CONST: " << constCount << " OP: " << opCount << RESET << endl;
 }
 
 // 심볼 테이블 정의

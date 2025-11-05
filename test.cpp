@@ -2,7 +2,7 @@
 #include <string>
 #include <windows.h> // 활성화를 위해 포함
 
-// (위에서 정의한 EnableVirtualTerminalProcessing() 함수가 있다고 가정)
+// 색상 출력 함수
 void EnableVirtualTerminalProcessing() {
     HANDLE hOut = GetStdHandle(STD_OUTPUT_HANDLE);
     if (hOut == INVALID_HANDLE_VALUE) {

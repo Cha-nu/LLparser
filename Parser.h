@@ -5,12 +5,12 @@
 #include "LexicalAnalyzer.h"
 #include <vector>
 #include <iostream>
+#include <windows.h>
 
 using namespace std;
 
 #define OK 1
-#define WARNING 0
-#define ERROR -1
+#define WARNING -1
 
 // 전역 변수로 ID, CONST, OP 개수 추적
 extern int idCount;
@@ -23,6 +23,7 @@ const char* const RED = "\x1B[31m";
 const char* const BLUE = "\x1B[34m";
 const char* const MAGENTA = "\x1B[35m"; // 보라색(마젠타)
 const char* const GREEN = "\x1B[32m";
+
 
 // 심볼 구조체
 struct Symbol
@@ -82,7 +83,7 @@ struct SymbolTable
     // 심볼 테이블 출력 함수
     void print() const
     {
-        cout << "Result ==> ";
+        cout << MAGENTA << "Result ==> ";
         for (int i = 0; i < size; i++)
         {
             cout << symbols[i].name << ": ";
@@ -96,7 +97,7 @@ struct SymbolTable
             }
             if (i < size - 1) cout << "; ";
         }
-        cout << ";" << endl;
+        cout << ";" << RESET << endl;
     }
 };
 
@@ -141,13 +142,14 @@ struct ParsingTreeNode
     void printMessage() const
     {
         if (!message.empty()) {
-            cout << message << endl;
+            cout << RED << message << RESET << endl;
         }
     }
 };
 
 // 각 카운터 초기화
 void resetCounts();
+void EnableVirtualTerminalProcessing();
 
 // 파싱 트리 관련 함수 선언
 void freeTree(ParsingTreeNode* root); // 메모리 해제를 위한 함수
