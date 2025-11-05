@@ -13,8 +13,10 @@ int nextToken = 0;
 FILE* in_fp = NULL;
 
 // lookup - 연산자와 괄호를 조사하여 그 토큰을 반환하는 함수
-int lookup(char ch) {
-    switch (ch) {
+int lookup(char ch)
+{
+    switch (ch)
+    {
     case '(':
         addChar();
         nextToken = LEFT_PAREN;
@@ -42,7 +44,8 @@ int lookup(char ch) {
     case ':':  // ':' 문자를 먼저 처리
         addChar();
         getChar();  // 다음 문자가 '='인지 확인
-        if (nextChar == '=') {
+        if (nextChar == '=')
+        {
             addChar();
             nextToken = ASSIGN_OP;  // := 대입 연산자 처리
         }
@@ -60,12 +63,15 @@ int lookup(char ch) {
 }
 
 // addchar - nextChar를 lexeme에 추가하는 함수
-void addChar() {
-    if (lexLen <= 98) {
+void addChar()
+{
+    if (lexLen <= 98)
+    {
         lexeme[lexLen++] = nextChar;
         lexeme[lexLen] = 0;
     }
-    else {
+    else
+    {
         cout << "Error - lexeme is too long" << endl;
     }
 }
@@ -88,27 +94,33 @@ void getChar() {
         }
 
     }
-    else {
+    else
+    {
         charClass = EOF;
     }
 }
 
 // getNonBlank - 비 공백 문자를 반환할 때까지 getChar를 호출하는 함수
-void getNonBlank() {
-    while ((isspace(nextChar) || nextChar <= 32) && nextChar != EOF) {  // EOF를 체크하여 무한 루프 방지
+void getNonBlank()
+{
+    while ((isspace(nextChar) || nextChar <= 32) && nextChar != EOF)
+    {  // EOF를 체크하여 무한 루프 방지
         getChar();  // 공백을 넘어갈 때 getChar 호출
     }
 }
 
 // lexical - 어휘 분석기
-int lexical() {
+int lexical()
+{
     lexLen = 0;
     getNonBlank();  // 공백 처리
-    switch (charClass) {
+    switch (charClass)
+    {
         case LETTER:  // 식별자 파싱
             addChar();
             getChar();
-            while (charClass == LETTER || charClass == DIGIT) {
+            while (charClass == LETTER || charClass == DIGIT)
+            {
                 addChar();
                 getChar();
             }
@@ -118,7 +130,8 @@ int lexical() {
         case DIGIT:  // 정수 리터럴 파싱
             addChar();
             getChar();
-            while (charClass == DIGIT) {
+            while (charClass == DIGIT)
+            {
                 addChar();
                 getChar();
             }

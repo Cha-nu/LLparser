@@ -4,15 +4,19 @@
 
 using namespace std;
 
-int main(int argc, char* argv[]) {
+int main(int argc, char* argv[])
+{
     // 입력 파일이 제공되었는지 확인
-    if (argc > 1) {
+    if (argc > 1)
+    {
         in_fp = fopen(argv[1], "r");  // 입력 파일 열기
-        if (in_fp == NULL) {
+        if (in_fp == NULL)
+        {
             cout << "ERROR - cannot open " << argv[1] << endl;
             return 1;
         }
-        else {
+        else
+        {
             getChar();  // 어휘 분석기의 첫 번째 문자를 읽음
             lexical();
             

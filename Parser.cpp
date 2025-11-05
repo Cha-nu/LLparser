@@ -49,7 +49,7 @@ ParsingTreeNode* program() {
 ParsingTreeNode* statements() {
     ParsingTreeNode* node = new ParsingTreeNode(0);
 
-    // [수정] EOF (파일 끝)을 만날 때까지 파싱을 계속합니다.
+    // EOF (파일 끝)을 만날 때까지 파싱을 계속합니다.
     while (nextToken != EOF) { // (Lexer에 EOF_TOKEN이 정의되어 있어야 함)
         
         ParsingTreeNode* statementNode = statement();
@@ -63,7 +63,8 @@ ParsingTreeNode* statements() {
             // 중복된 세미콜론 에러 처리
             while (nextToken == SEMI_COLON) {
                 node->setStatus(ERROR, "(ERROR) \"중복 세미콜론(;) 발생\"");
-                lexical(); // [수정] 중복된 세미콜론도 소모해야 무한루프에 빠지지 않음
+                node->printMessage();
+                lexical(); // 중복된 세미콜론 소모
             }
         }
         else if (nextToken == EOF) {

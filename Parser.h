@@ -17,27 +17,38 @@ extern int idCount;
 extern int constCount;
 extern int opCount;
 
+// 색상 코드
+const char* const RESET = "\x1B[0m";
+const char* const RED = "\x1B[31m";
+const char* const BLUE = "\x1B[34m";
+const char* const MAGENTA = "\x1B[35m"; // 보라색(마젠타)
+const char* const GREEN = "\x1B[32m";
+
 // 심볼 구조체
-struct Symbol {
+struct Symbol
+{
     string name;
     int value;
     bool isDefined;
 };
 
 // 심볼 테이블 구조체
-struct SymbolTable {
+struct SymbolTable
+{
     Symbol symbols[100];
     int size;
 
     // 생성자 (크기를 0으로 초기화)
-    SymbolTable() : size(0) {
+    SymbolTable() : size(0)
+    {
         for (int i = 0; i < 100; i++) {
             symbols[i] = Symbol();  // 각 Symbol을 기본값으로 초기화
         }
     }
 
     // 심볼 생성 함수
-    Symbol* createSymbol(const string& name) {
+    Symbol* createSymbol(const string& name)
+    {
         symbols[size].name = name;
         symbols[size].value = 0;          // 기본값
         symbols[size].isDefined = false;
@@ -45,9 +56,12 @@ struct SymbolTable {
     }
 
     // 심볼 검색 함수
-    Symbol* findSymbol(const string& name) {
-        for (int i = 0; i < size; i++) {
-            if (symbols[i].name == name) {
+    Symbol* findSymbol(const string& name)
+    {
+        for (int i = 0; i < size; i++)
+        {
+            if (symbols[i].name == name)
+            {
                 return &symbols[i];
             }
         }
@@ -55,23 +69,29 @@ struct SymbolTable {
     }
 
     // 심볼 업데이트 함수
-    void updateSymbol(const string& variable, int value) {
+    void updateSymbol(const string& variable, int value)
+    {
         Symbol* symbol = findSymbol(variable);
-        if (symbol) {
+        if (symbol)
+        {
             symbol->value = value;
             symbol->isDefined = true;
         }
     }
 
     // 심볼 테이블 출력 함수
-    void print() const {
+    void print() const
+    {
         cout << "Result ==> ";
-        for (int i = 0; i < size; i++) {
+        for (int i = 0; i < size; i++)
+        {
             cout << symbols[i].name << ": ";
-            if (symbols[i].isDefined) {
+            if (symbols[i].isDefined)
+            {
                 cout << symbols[i].value;
             }
-            else {
+            else
+            {
                 cout << "Unknown";
             }
             if (i < size - 1) cout << "; ";
@@ -80,7 +100,8 @@ struct SymbolTable {
     }
 };
 
-struct ParsingTreeNode {
+struct ParsingTreeNode
+{
     int token;                   // 토큰 유형
     int value;                   // 노드의 값
     bool isDefined;              // 노드의 값이 초기화 되었는지 확인
@@ -89,32 +110,36 @@ struct ParsingTreeNode {
     vector<ParsingTreeNode*> children;  // 모든 자식 노드를 관리하는 벡터
 
     // 생성자
-    ParsingTreeNode(int token)
-        : token(token), value(0), isDefined(false), status(OK), message("(OK)") {}
+    ParsingTreeNode(int token) : token(token), value(0), isDefined(false), status(OK), message("(OK)") {}
 
     // 자식 노드 추가 함수
-    void addChild(ParsingTreeNode* childNode) {
+    void addChild(ParsingTreeNode* childNode)
+    {
         children.push_back(childNode);
         // 상태 및 메시지 업데이트
         setStatus(childNode->status, childNode->message);
     }
 
     // 값 설정 함수
-    void setValue(int newValue) {
+    void setValue(int newValue)
+    {
         value = newValue;
         isDefined = true;
     }
 
     // 상태 및 메시지 설정 함수
-    void setStatus(int newStatus, const string& newMessage) {
-        if (status > newStatus) {
+    void setStatus(int newStatus, const string& newMessage)
+    {
+        if (status > newStatus)
+        {
             status = newStatus;
             message = newMessage;
         }
     }
 
     // 메시지 출력
-    void printMessage() const {
+    void printMessage() const
+    {
         if (!message.empty()) {
             cout << message << endl;
         }
