@@ -21,6 +21,7 @@ enum CharClass {
 enum TokenCode {
     INT_LIT = 10,
     IDENT = 11,
+    KEYWORD = 12,
     ASSIGN_OP = 20,
     ADD_OP = 21,
     SUB_OP = 22,
