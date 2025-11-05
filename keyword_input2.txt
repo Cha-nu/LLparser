@@ -1,5 +1,0 @@
-value1 := 10.5 ;
-_value2 := value1 * 0.25 ;
-TOTAL := value1 + _value2 - 3 ;
-return := TOTAL + 1 ;
-total := TOTAL / 2.0 ;

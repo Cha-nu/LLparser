@@ -1,2 +1,0 @@
-int := 1;
-_valid := int + 2;
