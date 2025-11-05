@@ -157,6 +157,14 @@ ParsingTreeNode* statement() {
             node->setStatus(ERROR, "(ERROR) \"배정 연산자(:=)가 필요합니다.\"");
         }
     } 
+    else if (nextToken == KEYWORD) {
+        string keyword = lexeme;
+        node->setStatus(ERROR, "(ERROR) \"C 키워드(" + keyword + ")는 식별자로 사용할 수 없습니다.\"");
+        lexical(); // 키워드 소비
+        while (nextToken != SEMI_COLON && nextToken != EOF) {
+            lexical();
+        }
+    }
     else {
         // 식별자 누락 에러 처리
         node->setStatus(ERROR, "(ERROR) \"식별자가 필요합니다.\"");
@@ -289,6 +297,11 @@ ParsingTreeNode* factor() {
             string message = "(ERROR) \"정의되지 않은 변수(" + symbol->name + ")가 참조됨\"";
             node->setStatus(ERROR, message);
         }
+        lexical();
+    }
+    else if (nextToken == KEYWORD) {
+        string keyword = lexeme;
+        node->setStatus(ERROR, "(ERROR) \"C 키워드(" + keyword + ")는 피연산자로 사용할 수 없습니다.\"");
         lexical();
     }
     else if (nextToken == INT_LIT) {

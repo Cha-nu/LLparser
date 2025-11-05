@@ -1,6 +1,9 @@
 
 #include "LexicalAnalyzer.h"
 #include <iostream>
+#include <unordered_set>
+#include <string>
+#include <cctype>
 
 using namespace std;
 
@@ -12,6 +15,14 @@ int token = 0;
 int nextToken = 0;
 FILE* in_fp = NULL;
 bool hasDot = false;
+
+static const unordered_set<string> C_KEYWORDS = {
+    "auto", "break", "case", "char", "const", "continue", "default", "do",
+    "double", "else", "enum", "extern", "float", "for", "goto", "if",
+    "inline", "int", "long", "register", "restrict", "return", "short",
+    "signed", "sizeof", "static", "struct", "switch", "typedef", "union",
+    "unsigned", "void", "volatile", "while", "_Bool", "_Complex", "_Imaginary"
+};
 
 // lookup - 연산자와 괄호를 조사하여 그 토큰을 반환하는 함수
 int lookup(char ch)
@@ -80,7 +91,7 @@ void addChar()
 // getChar - 입력으로부터 다음 문자를 가져와서 그 문자 유형을 결정하는 함수
 void getChar() {
     if ((nextChar = getc(in_fp)) != EOF) {
-        if (isalpha(nextChar)) {
+        if (isalpha(nextChar) || nextChar == '_') {
             charClass = LETTER;
         }
         else if (isdigit(nextChar)) {
@@ -118,6 +129,7 @@ int lexical()
     switch (charClass)
     {
         case LETTER:  // 식별자 파싱
+        {
             addChar();
             getChar();
             while (charClass == LETTER || charClass == DIGIT)
@@ -125,8 +137,15 @@ int lexical()
                 addChar();
                 getChar();
             }
-            nextToken = IDENT;
+            string identifier = lexeme;
+            if (C_KEYWORDS.find(identifier) != C_KEYWORDS.end()) {
+                nextToken = KEYWORD;
+            }
+            else {
+                nextToken = IDENT;
+            }
             break;
+        }
 
         case DIGIT:  // 숫자 리터럴 파싱(정수/실수)
         {
