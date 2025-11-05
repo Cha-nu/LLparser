@@ -1,4 +1,3 @@
-
 #include "LexicalAnalyzer.h"
 #include <iostream>
 #include <unordered_set>
@@ -53,22 +52,24 @@ int lookup(char ch)
         addChar();
         nextToken = DIV_OP;
         break;
-    case ':':  // ':' 문자를 먼저 처리
+    case ':': // ':' 문자를 먼저 처리
         addChar();
-        getChar();  // 다음 문자가 '='인지 확인
+        getChar(); // 다음 문자가 '='인지 확인
         if (nextChar == '=')
         {
             addChar();
-            nextToken = ASSIGN_OP;  // := 대입 연산자 처리
+            nextToken = ASSIGN_OP; // := 대입 연산자 처리
         }
         break;
     case ';':
         addChar();
         nextToken = SEMI_COLON;
         break;
+
+    // 알 수 없는 문자가 들어왔을 때 EOF가 아닌 UNKNOWN을 반환
     default:
         addChar();
-        nextToken = EOF;
+        nextToken = UNKNOWN;
         break;
     }
     return nextToken;
@@ -116,8 +117,8 @@ void getChar() {
 void getNonBlank()
 {
     while ((isspace(nextChar) || nextChar <= 32) && nextChar != EOF)
-    {  // EOF를 체크하여 무한 루프 방지
-        getChar();  // 공백을 넘어갈 때 getChar 호출
+    { // EOF를 체크하여 무한 루프 방지
+        getChar(); // 공백을 넘어갈 때 getChar 호출
     }
 }
 
@@ -125,10 +126,10 @@ void getNonBlank()
 int lexical()
 {
     lexLen = 0;
-    getNonBlank();  // 공백 처리
+    getNonBlank(); // 공백 처리
     switch (charClass)
     {
-        case LETTER:  // 식별자 파싱
+        case LETTER: // 식별자 파싱 (원본과 동일)
         {
             addChar();
             getChar();
@@ -147,39 +148,58 @@ int lexical()
             break;
         }
 
-        case DIGIT:  // 숫자 리터럴 파싱(정수/실수)
+        case DIGIT: // 숫자 리터럴 파싱(정수/실수)
         {
             hasDot = false;
             addChar();
             getChar();
             while (true)
             {
-                if (charClass == DIGIT)
-                {
-                    addChar();
-                    getChar();
-                }
-                else if (!hasDot && nextChar == '.')
-                {
-                    hasDot = true;
-                    addChar();
-                    getChar();
+               if (charClass == DIGIT)
+               {
+                addChar();
+                getChar();
+               }
+               else if (!hasDot && nextChar == '.')
+               {
+                hasDot = true;
+                addChar();
+                getChar();
 
-                    if (charClass != DIGIT)
-                    {
-                        break;
-                    }
-                }
-                else
+                if (charClass != DIGIT)
                 {
-                    break;
+               break;
                 }
+               }
+               else
+               {
+                break;
+               }
             }
-            nextToken = INT_LIT;
+
+            // 숫자로 시작했으나 뒤에 문자가 붙어 잘못된 식별자(예: 9id)가 된 경우
+            if (charClass == LETTER) 
+            {
+                // "9" 까지 lexeme에 들어간 상태, nextChar는 "i"
+                addChar(); // "i" 추가
+                getChar(); // "d" 읽기
+
+                // 나머지 문자/숫자를 모두 읽어서 하나의 UNKNOWN 토큰으로 만듦
+                while (charClass == LETTER || charClass == DIGIT) {
+                    addChar();
+                    getChar();
+                }
+                nextToken = UNKNOWN; // 최종 토큰을 UNKNOWN으로 설정
+            }
+            else
+            {
+                // "9" 또는 "9.123" 처럼 올바른 숫자 리터럴인 경우
+                nextToken = INT_LIT;
+            }
             break;
         }
 
-        case UNKNOWN:  // 연산자와 괄호 파싱
+        case UNKNOWN: // 연산자와 괄호 파싱
             lookup(nextChar);
             getChar();
             break;

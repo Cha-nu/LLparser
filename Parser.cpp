@@ -52,7 +52,7 @@ ParsingTreeNode* statements() {
     ParsingTreeNode* node = new ParsingTreeNode(0);
 
     // EOF (파일 끝)을 만날 때까지 파싱을 계속합니다.
-    while (nextToken != EOF) { // (Lexer에 EOF_TOKEN이 정의되어 있어야 함)
+    while (nextToken != EOF) { 
         
         ParsingTreeNode* statementNode = statement();
         node->addChild(statementNode);
@@ -75,11 +75,13 @@ ParsingTreeNode* statements() {
         }
         else {
             // [핵심 오류 복구] ;도 EOF도 아닌 토큰 (ex: ')')을 만났을 때
-            // 1. 오류를 보고
-            string errorMsg = "(ERROR) \"세미콜론(;)이 예상된 위치에 예상치 못한 토큰 '" + (string)lexeme + "' 발견.\"";
+            string errorMsg;
+            if (nextToken == UNKNOWN) {
+                errorMsg = "(ERROR) \"알 수 없는 토큰 '" + (string)lexeme + "'가 문장 끝에 위치함.\"";
+            } else {
+                errorMsg = "(ERROR) \"세미콜론(;)이 예상된 위치에 예상치 못한 토큰 '" + (string)lexeme + "' 발견.\"";
+            }
             
-            // statement() 자체에 에러가 없었다면(OK였다면),
-            // 이 라인(statement)에 문법 오류 설정
             if (statementNode->status != ERROR) {
                 statementNode->setStatus(ERROR, errorMsg);
             }
@@ -128,22 +130,21 @@ ParsingTreeNode* statement() {
 
             // 표현식 처리
             ParsingTreeNode* exprNode = expression();
-            node->addChild(exprNode); // STATEMENT 노드에 expression 추가
+            node->addChild(exprNode); 
 
-            // [!!! 핵심 수정 사항 !!!]
-            // expression()이 끝난 직후 토큰을 확인
-            // 표현식 자체는 성공했더라도(isDefined), 뒤에 ;가 오지 않으면 문장(statement) 오류
+            // expression()이 끝난 직후 토큰 확인 (세미콜론이 아닌 경우)
             if (nextToken != SEMI_COLON && nextToken != EOF) {
                 
-                // (예: ')' 나 '+' 같은 예상치 못한 토큰)
-                string errorMsg = "(ERROR) \"세미콜론(;)이 예상된 위치에 예상치 못한 토큰 '" + (string)lexeme + "' 발견.\"";
+                string errorMsg;
+                if (nextToken == UNKNOWN) {
+                    errorMsg = "(ERROR) \"알 수 없는 토큰 '" + (string)lexeme + "'가 문장 끝에 위치함.\"";
+                } else {
+                    errorMsg = "(ERROR) \"세미콜론(;)이 예상된 위치에 예상치 못한 토큰 '" + (string)lexeme + "' 발견.\"";
+                }
                 
-                // statement()가 이미 다른 에러를 가지고 있지 않다면, 이 에러를 설정
                 if (node->status != ERROR) {
                     node->setStatus(ERROR, errorMsg);
                 }
-
-                // 오류가 발생했으므로, 이 표현식의 결과는 유효하지 않음(defined)으로 처리
                 exprNode->isDefined = false;
             }
 
@@ -165,9 +166,23 @@ ParsingTreeNode* statement() {
             lexical();
         }
     }
+    // Lexer가 '9id' 등을 UNKNOWN으로 반환하면 여기서 처리
+    else if (nextToken == UNKNOWN) {
+        string unknownToken = lexeme;
+        node->setStatus(ERROR, "(ERROR) \"잘못된 식별자 또는 알 수 없는 토큰(" + unknownToken + ")\"");
+        lexical(); // UNKNOWN 토큰 소모
+        // 오류 복구: 다음 세미콜론까지 '무시'
+        while (nextToken != SEMI_COLON && nextToken != EOF) {
+            lexical();
+        }
+    }
     else {
-        // 식별자 누락 에러 처리
+        // 식별자 누락 에러 처리 (예: := 10;)
         node->setStatus(ERROR, "(ERROR) \"식별자가 필요합니다.\"");
+        // 오류 복구: 다음 세미콜론까지 '무시'
+        while (nextToken != SEMI_COLON && nextToken != EOF && nextToken != IDENT) {
+            lexical();
+        }
     }
     printCounts();
     node->printMessage();
@@ -226,7 +241,7 @@ ParsingTreeNode* term_tail(double leftValue) {
                 string message = "(ERROR) \"중복 연산자(" + (string)lexeme + ") 발생\"";
                 node->setStatus(ERROR, message);
             }
-        lexical();
+            lexical();
         }
 
         ParsingTreeNode* termNode = term();
@@ -255,26 +270,21 @@ ParsingTreeNode* factor() {
 
     if (nextToken == LEFT_PAREN) {
         node->addChild(new ParsingTreeNode(LEFT_PAREN));
-        lexical();  // '(' 처리
+        lexical(); // '(' 처리
         
         ParsingTreeNode* expressionNode = expression();
         node->addChild(expressionNode);
 
-        // [수정] 닫는 괄호가 일치하는지만 확인합니다.
         if (nextToken == RIGHT_PAREN) {
             node->addChild(new ParsingTreeNode(RIGHT_PAREN));
-            lexical();  // ')' 처리
+            lexical(); // ')' 처리
 
-            // ( expr ) 까지 성공적으로 파싱됨.
             if (expressionNode->isDefined) {
                 node->setValue(expressionNode->value);
             }
         }
         else {
-            // ( expr 뒤에 ')'가 오지 않은 경우 (예: ( expr + 2)
             node->setStatus(ERROR, "(ERROR) \"닫는 괄호{)}가 필요합니다.\"");
-            // 오류가 발생했으므로, 괄호 안의 expression 값은 사용하지 않습니다.
-            // node->isDefined는 false로 유지됩니다.
             return node;
         }
     }
@@ -312,6 +322,21 @@ ParsingTreeNode* factor() {
         node->setValue(constNode->value);
 
         lexical();
+    }
+    // Lexer가 '9id'나 '$' 등을 UNKNOWN으로 반환하면 여기서 처리
+    else if (nextToken == UNKNOWN) {
+        string unknownToken = lexeme;
+        node->setStatus(ERROR, "(ERROR) \"피연산자 자리에 알 수 없는 토큰(" + unknownToken + ")\"");
+        lexical(); // UNKNOWN 토큰 소모
+    }
+    // 괄호, 식별자, 키워드, 상수, UNKNOWN이 모두 아닌 경우
+    // (예: a := + 5; 에서 '+'를 만난 경우)
+    else {
+        // node->isDefined는 기본적으로 false
+        // 다른 오류가 (예: 괄호) 이미 설정되지 않았다면, 새 오류 설정
+        if (node->status != ERROR && nextToken != EOF && nextToken != SEMI_COLON) { 
+            node->setStatus(ERROR, "(ERROR) \"피연산자(식별자, 상수, 또는 괄호)가 필요합니다.\"");
+        }
     }
     return node;
 }
