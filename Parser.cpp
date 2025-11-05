@@ -1,5 +1,7 @@
 #include "Parser.h"
 #include <iostream>
+#include <cstdlib>
+#include <cmath>
 
 using namespace std;
 
@@ -197,7 +199,7 @@ ParsingTreeNode* term() {
 }
 
 // <term_tail> → <add_op> <term> <term_tail> | ε
-ParsingTreeNode* term_tail(int leftValue) {
+ParsingTreeNode* term_tail(double leftValue) {
     ParsingTreeNode* node = new ParsingTreeNode(0);
     if (nextToken == ADD_OP || nextToken == SUB_OP) {
         opCount++;
@@ -283,13 +285,17 @@ ParsingTreeNode* factor() {
             identNode->setValue(symbol->value);
             node->setValue(identNode->value);
         }
+        else {
+            string message = "(ERROR) \"정의되지 않은 변수(" + symbol->name + ")가 참조됨\"";
+            node->setStatus(ERROR, message);
+        }
         lexical();
     }
     else if (nextToken == INT_LIT) {
         constCount++;
         ParsingTreeNode* constNode = new ParsingTreeNode(INT_LIT);
         node->addChild(constNode);
-        constNode->setValue(atoi(lexeme));
+        constNode->setValue(strtod(lexeme, nullptr));
         node->setValue(constNode->value);
 
         lexical();
@@ -298,7 +304,7 @@ ParsingTreeNode* factor() {
 }
 
 // <factor_tail> → <mult_op> <factor> <factor_tail> | ε
-ParsingTreeNode* factor_tail(int leftValue) {
+ParsingTreeNode* factor_tail(double leftValue) {
     ParsingTreeNode* node = new ParsingTreeNode(0);
 
     if (nextToken == MULT_OP || nextToken == DIV_OP) {
@@ -330,9 +336,12 @@ ParsingTreeNode* factor_tail(int leftValue) {
             if (op == MULT_OP) {
                 node->setValue(leftValue * factorTailNode->value);
             }
-            else if (factorTailNode->value == 0)
+            else if (std::fabs(factorTailNode->value) < 1e-12)
             {
                 node->setStatus(ERROR, "(ERROR) \"0으로는 나눌 수 없습니다.\"");
+            }
+            else {
+                node->setValue(leftValue / factorTailNode->value);
             }
         }
     }

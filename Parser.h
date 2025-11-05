@@ -28,7 +28,7 @@ const char* const GREEN = "\x1B[32m";
 struct Symbol
 {
     string name;
-    int value;
+    double value;
     bool isDefined;
 };
 
@@ -50,7 +50,7 @@ struct SymbolTable
     Symbol* createSymbol(const string& name)
     {
         symbols[size].name = name;
-        symbols[size].value = 0;          // 기본값
+        symbols[size].value = 0.0;        // 기본값
         symbols[size].isDefined = false;
         return &symbols[size++];          // 새 심볼 반환 후 크기 증가
     }
@@ -69,7 +69,7 @@ struct SymbolTable
     }
 
     // 심볼 업데이트 함수
-    void updateSymbol(const string& variable, int value)
+    void updateSymbol(const string& variable, double value)
     {
         Symbol* symbol = findSymbol(variable);
         if (symbol)
@@ -103,14 +103,14 @@ struct SymbolTable
 struct ParsingTreeNode
 {
     int token;                   // 토큰 유형
-    int value;                   // 노드의 값
+    double value;                // 노드의 값
     bool isDefined;              // 노드의 값이 초기화 되었는지 확인
     int status;                  // 노드의 상태 (OK, WARNING, ERROR 등)
     string message;              // 경고 및 오류 메시지 배열
     vector<ParsingTreeNode*> children;  // 모든 자식 노드를 관리하는 벡터
 
     // 생성자
-    ParsingTreeNode(int token) : token(token), value(0), isDefined(false), status(OK), message("(OK)") {}
+    ParsingTreeNode(int token) : token(token), value(0.0), isDefined(false), status(OK), message("(OK)") {}
 
     // 자식 노드 추가 함수
     void addChild(ParsingTreeNode* childNode)
@@ -121,7 +121,7 @@ struct ParsingTreeNode
     }
 
     // 값 설정 함수
-    void setValue(int newValue)
+    void setValue(double newValue)
     {
         value = newValue;
         isDefined = true;
@@ -159,7 +159,7 @@ ParsingTreeNode* statement();
 ParsingTreeNode* expression();
 ParsingTreeNode* term();
 ParsingTreeNode* factor();
-ParsingTreeNode* term_tail(int leftValue);
-ParsingTreeNode* factor_tail(int leftValue);
+ParsingTreeNode* term_tail(double leftValue);
+ParsingTreeNode* factor_tail(double leftValue);
 
 #endif // SYNTAX_ANALYZER_H

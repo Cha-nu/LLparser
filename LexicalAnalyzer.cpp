@@ -127,16 +127,37 @@ int lexical()
             nextToken = IDENT;
             break;
 
-        case DIGIT:  // 정수 리터럴 파싱
+        case DIGIT:  // 숫자 리터럴 파싱(정수/실수)
+        {
+            bool hasDot = false;
             addChar();
             getChar();
-            while (charClass == DIGIT)
+            while (true)
             {
-                addChar();
-                getChar();
+                if (charClass == DIGIT)
+                {
+                    addChar();
+                    getChar();
+                }
+                else if (!hasDot && nextChar == '.')
+                {
+                    hasDot = true;
+                    addChar();
+                    getChar();
+
+                    if (charClass != DIGIT)
+                    {
+                        break;
+                    }
+                }
+                else
+                {
+                    break;
+                }
             }
             nextToken = INT_LIT;
             break;
+        }
 
         case UNKNOWN:  // 연산자와 괄호 파싱
             lookup(nextChar);
