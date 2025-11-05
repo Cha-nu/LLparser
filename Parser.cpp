@@ -156,6 +156,7 @@ ParsingTreeNode* statement() {
         else {
             // ASSIGN_OP 누락 에러 처리
             node->setStatus(ERROR, "(ERROR) \"배정 연산자(:=)가 필요합니다.\"");
+            lexical();
         }
     } 
     else if (nextToken == KEYWORD) {
@@ -249,7 +250,7 @@ ParsingTreeNode* term_tail(double leftValue) {
         ParsingTreeNode* termTailNode = term_tail(termNode->value);
         node->addChild(termTailNode);
 
-        if (termNode->isDefined && termTailNode->isDefined && node->status != -1) {
+        if (termNode->isDefined && termTailNode->isDefined && node->status != ERROR) {
             if (op == ADD_OP) {
                 node->setValue(leftValue + termTailNode->value);
             }
@@ -303,10 +304,6 @@ ParsingTreeNode* factor() {
             identNode->setValue(symbol->value);
             node->setValue(identNode->value);
         }
-        else {
-            string message = "(ERROR) \"정의되지 않은 변수(" + symbol->name + ")가 참조됨\"";
-            node->setStatus(ERROR, message);
-        }
         lexical();
     }
     else if (nextToken == KEYWORD) {
@@ -334,8 +331,14 @@ ParsingTreeNode* factor() {
     else {
         // node->isDefined는 기본적으로 false
         // 다른 오류가 (예: 괄호) 이미 설정되지 않았다면, 새 오류 설정
-        if (node->status != ERROR && nextToken != EOF && nextToken != SEMI_COLON) { 
-            node->setStatus(ERROR, "(ERROR) \"피연산자(식별자, 상수, 또는 괄호)가 필요합니다.\"");
+        if (node->status != ERROR) { 
+            if (nextToken == EOF) {
+                node->setStatus(ERROR, "(ERROR) \"표현식이 예기치 않게 종료되었습니다. (피연산자 누락)\"");
+            } else if (nextToken != SEMI_COLON) {
+                node->setStatus(ERROR, "(ERROR) \"피연산자(식별자, 상수, 또는 괄호)가 필요합니다.\"");
+            }
+            // 세미콜론(;)을 만난 경우는 statement()에서 처리하므로 여기서 오류를 설정하지 않음
+            // (예: a := ; ) -> 이 경우 expression()은 유효하지 않게 되고 statement()가 오류를 잡음
         }
     }
     return node;

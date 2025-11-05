@@ -10,7 +10,6 @@
 using namespace std;
 
 #define OK 1
-#define WARNING -1
 
 // 전역 변수로 ID, CONST, OP 개수 추적
 extern int idCount;
@@ -106,7 +105,7 @@ struct ParsingTreeNode
     int token;                   // 토큰 유형
     double value;                // 노드의 값
     bool isDefined;              // 노드의 값이 초기화 되었는지 확인
-    int status;                  // 노드의 상태 (OK, WARNING, ERROR 등)
+    int status;                  // 노드의 상태 (OK, ERROR 등)
     string message;              // 경고 및 오류 메시지 배열
     vector<ParsingTreeNode*> children;  // 모든 자식 노드를 관리하는 벡터
 

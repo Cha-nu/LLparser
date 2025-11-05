@@ -31,26 +31,32 @@ int lookup(char ch)
     case '(':
         addChar();
         nextToken = LEFT_PAREN;
+        getChar(); // 문자 소모
         break;
     case ')':
         addChar();
         nextToken = RIGHT_PAREN;
+        getChar(); // 문자 소모
         break;
     case '+':
         addChar();
         nextToken = ADD_OP;
+        getChar(); // 문자 소모
         break;
     case '-':
         addChar();
         nextToken = SUB_OP;
+        getChar(); // 문자 소모
         break;
     case '*':
         addChar();
         nextToken = MULT_OP;
+        getChar(); // 문자 소모
         break;
     case '/':
         addChar();
         nextToken = DIV_OP;
+        getChar(); // 문자 소모
         break;
     case ':': // ':' 문자를 먼저 처리
         addChar();
@@ -59,17 +65,26 @@ int lookup(char ch)
         {
             addChar();
             nextToken = ASSIGN_OP; // := 대입 연산자 처리
+            getChar(); // '=' 문자 소모
+        }
+        else 
+        {
+            nextToken = UNKNOWN;
+            // 여기서 getChar()를 호출하면 안 됩니다.
+            // nextChar는 ':' 다음 문자이므로 다음 lexical()에서 처리해야 합니다.
         }
         break;
     case ';':
         addChar();
         nextToken = SEMI_COLON;
+        getChar(); // 문자 소모
         break;
 
     // 알 수 없는 문자가 들어왔을 때 EOF가 아닌 UNKNOWN을 반환
     default:
         addChar();
         nextToken = UNKNOWN;
+        getChar(); // 알 수 없는 문자 소모
         break;
     }
     return nextToken;
@@ -155,26 +170,26 @@ int lexical()
             getChar();
             while (true)
             {
-               if (charClass == DIGIT)
-               {
-                addChar();
-                getChar();
-               }
-               else if (!hasDot && nextChar == '.')
-               {
-                hasDot = true;
-                addChar();
-                getChar();
-
-                if (charClass != DIGIT)
+                if (charClass == DIGIT)
                 {
-               break;
+                addChar();
+                getChar();
                 }
-               }
-               else
-               {
+                else if (!hasDot && nextChar == '.')
+                {
+                    hasDot = true;
+                    addChar();
+                    getChar();
+
+                    if (charClass != DIGIT)
+                    {
+                        break;
+                    }
+                }
+                else
+                {
                 break;
-               }
+                }
             }
 
             // 숫자로 시작했으나 뒤에 문자가 붙어 잘못된 식별자(예: 9id)가 된 경우
@@ -201,7 +216,6 @@ int lexical()
 
         case UNKNOWN: // 연산자와 괄호 파싱
             lookup(nextChar);
-            getChar();
             break;
 
         case EOF:
