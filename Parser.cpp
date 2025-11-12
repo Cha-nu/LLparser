@@ -150,8 +150,17 @@ ParsingTreeNode* statement() {
                     lexical(); 
                 }
             }
+            if (exprNode->isDefined) {
+                identNode->setValue(exprNode->value);
+                symTable.updateSymbol(symbol->name, identNode->value);
+            }
         }
-    } 
+        else {
+            // ASSIGN_OP 누락 에러 처리
+            node->setStatus(ERROR, "(ERROR) \"배정 연산자(:=)가 필요합니다.\"");
+            lexical();
+        }
+    }
     else if (nextToken == KEYWORD) {
         string keyword = lexeme;
         node->setStatus(ERROR, "(ERROR) \"C 키워드(" + keyword + ")는 식별자로 사용할 수 없습니다.\"");
