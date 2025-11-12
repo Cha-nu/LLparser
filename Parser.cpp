@@ -134,29 +134,22 @@ ParsingTreeNode* statement() {
 
             // expression()이 끝난 직후 토큰 확인 (세미콜론이 아닌 경우)
             if (nextToken != SEMI_COLON && nextToken != EOF) {
-                
+            
                 string errorMsg;
                 if (nextToken == UNKNOWN) {
                     errorMsg = "(ERROR) \"알 수 없는 토큰 '" + (string)lexeme + "'가 문장 끝에 위치함.\"";
                 } else {
                     errorMsg = "(ERROR) \"세미콜론(;)이 예상된 위치에 예상치 못한 토큰 '" + (string)lexeme + "' 발견.\"";
                 }
-                
+
                 if (node->status != ERROR) {
                     node->setStatus(ERROR, errorMsg);
                 }
                 exprNode->isDefined = false;
+                while (nextToken != SEMI_COLON && nextToken != EOF) {
+                    lexical(); 
+                }
             }
-
-            if (exprNode->isDefined) {
-                identNode->setValue(exprNode->value);
-                symTable.updateSymbol(symbol->name, identNode->value);
-            }
-        }
-        else {
-            // ASSIGN_OP 누락 에러 처리
-            node->setStatus(ERROR, "(ERROR) \"배정 연산자(:=)가 필요합니다.\"");
-            lexical();
         }
     } 
     else if (nextToken == KEYWORD) {
